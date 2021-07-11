@@ -1,0 +1,35 @@
+name: teams_app
+description: A new Flutter project.
+
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.12.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.3
+  font_awesome_flutter: ^9.1.0
+  agora_rtc_engine: ^4.0.2
+  permission_handler: ^8.1.2 
+  google_fonts: ^2.1.0 
+  pin_code_fields: ^7.2.0
+  firebase_core: ^1.3.0
+  firebase_auth: ^2.0.0
+  cloud_firestore: ^2.3.0
+  modal_progress_hud_nsn: ^0.1.0-nullsafety-1
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+  assets:
+    - images/dialogoapp.png
+    - images/logo.png  
