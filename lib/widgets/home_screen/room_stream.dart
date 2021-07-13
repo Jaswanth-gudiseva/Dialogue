@@ -27,7 +27,7 @@ class RoomStream extends StatelessWidget {
         }
         final codes = snapshot.data!.docs;
         return FutureBuilder(
-          future: FireStoreDB().later(codes, username),
+          future: FireStoreDB().getRoomNames(codes, username),
           builder: (context, snapshot1) {
             if (snapshot1.hasData) {
               List<Widget> data1 = snapshot1.data as List<Widget>;
