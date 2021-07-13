@@ -3,10 +3,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:agora_rtc_engine/rtc_engine.dart';
 import 'package:agora_rtc_engine/rtc_local_view.dart' as rtc_local_view;
 import 'package:agora_rtc_engine/rtc_remote_view.dart' as rtc_remote_view;
+import 'package:teams_app/app_id.dart';
 
 import 'package:teams_app/screens/chat_screen.dart';
 
-const String appId = '8d7bc3a329fa44bfb2e501eab3761b6e';
 const String userLimit =
     'Currently, Dialogue supports only upto 6 users in a video '
     'call at once. To continue with the Video call, please make '
