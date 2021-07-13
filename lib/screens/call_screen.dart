@@ -1,18 +1,27 @@
-import 'package:agora_rtc_engine/rtc_engine.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:agora_rtc_engine/rtc_engine.dart';
 import 'package:agora_rtc_engine/rtc_local_view.dart' as rtc_local_view;
 import 'package:agora_rtc_engine/rtc_remote_view.dart' as rtc_remote_view;
-import '/screens/chat_screen.dart';
+
+import 'package:teams_app/screens/chat_screen.dart';
 
 const String appId = '8d7bc3a329fa44bfb2e501eab3761b6e';
+const String userLimit =
+    'Currently, Dialogue supports only upto 6 users in a video '
+    'call at once. To continue with the Video call, please make '
+    'sure there are only 6 users at once.';
 
-// ignore: must_be_immutable
 class CallScreen extends StatefulWidget {
-  String channelId = 'ERROR: CHANNELID';
-  String user = '';
+  String meetCode = '';
+  String username;
+  String roomName;
   bool isInstant;
   CallScreen(
-      {required this.channelId, required this.user, required this.isInstant});
+      {required this.meetCode,
+      required this.username,
+      required this.isInstant,
+      required this.roomName});
 
   @override
   _CallScreenState createState() => _CallScreenState();
@@ -46,7 +55,7 @@ class _CallScreenState extends State<CallScreen> {
     await _initAgoraRtcEngine();
     _addAgoraEventHandlers();
     // await _engine.enableWebSdkInteroperability(true);
-    await _engine.joinChannel(null, widget.channelId, null, 0);
+    await _engine.joinChannel(null, widget.meetCode, null, 0);
   }
 
   //
@@ -56,47 +65,49 @@ class _CallScreenState extends State<CallScreen> {
   }
 
   void _addAgoraEventHandlers() {
-    _engine.setEventHandler(RtcEngineEventHandler(
-      error: (code) {
-        setState(() {
-          final info = 'onError: $code';
-          _infoStrings.add(info);
-        });
-      },
-      joinChannelSuccess: (channel, uid, elapsed) {
-        setState(() {
-          final info = 'onJoinChannel: $channel, uid: $uid';
-          _infoStrings.add(info);
-        });
-      },
-      leaveChannel: (stats) {
-        setState(() {
-          _infoStrings.add('onLeaveChannel');
+    _engine.setEventHandler(
+      RtcEngineEventHandler(
+        error: (code) {
+          setState(() {
+            final info = 'onError: $code';
+            _infoStrings.add(info);
+          });
+        },
+        joinChannelSuccess: (channel, uid, elapsed) {
+          setState(() {
+            final info = 'onJoinChannel: $channel, uid: $uid';
+            _infoStrings.add(info);
+          });
+        },
+        leaveChannel: (stats) {
+          setState(() {
+            _infoStrings.add('onLeaveChannel');
 
-          _users.clear();
-        });
-      },
-      userJoined: (uid, elapsed) {
-        setState(() {
-          final info = 'userJoined: $uid';
-          _infoStrings.add(info);
-          _users.add(uid);
-        });
-      },
-      userOffline: (uid, reason) {
-        setState(() {
-          final info = 'userOffline: $uid , reason: $reason';
-          _infoStrings.add(info);
-          _users.remove(uid);
-        });
-      },
-      firstRemoteVideoFrame: (uid, width, height, elapsed) {
-        setState(() {
-          final info = 'firstRemoteVideoFrame: $uid';
-          _infoStrings.add(info);
-        });
-      },
-    ));
+            _users.clear();
+          });
+        },
+        userJoined: (uid, elapsed) {
+          setState(() {
+            final info = 'userJoined: $uid';
+            _infoStrings.add(info);
+            _users.add(uid);
+          });
+        },
+        userOffline: (uid, reason) {
+          setState(() {
+            final info = 'userOffline: $uid , reason: $reason';
+            _infoStrings.add(info);
+            _users.remove(uid);
+          });
+        },
+        firstRemoteVideoFrame: (uid, width, height, elapsed) {
+          setState(() {
+            final info = 'firstRemoteVideoFrame: $uid';
+            _infoStrings.add(info);
+          });
+        },
+      ),
+    );
   }
 
   Widget _toolbar() {
@@ -114,24 +125,25 @@ class _CallScreenState extends State<CallScreen> {
             constraints: const BoxConstraints(maxHeight: 40, maxWidth: 40),
             child: Icon(
               showVideo ? Icons.videocam : Icons.videocam_off,
-              color: showVideo ? Colors.indigo[400] : Colors.white,
+              color: showVideo ? Theme.of(context).primaryColor : Colors.white,
               size: 20.0,
             ),
             shape: const CircleBorder(),
             elevation: 2.0,
-            fillColor: showVideo ? Colors.white : Colors.indigo[400],
+            fillColor:
+                showVideo ? Colors.white : Theme.of(context).primaryColor,
             padding: const EdgeInsets.all(10.0),
           ),
           RawMaterialButton(
             onPressed: _onToggleMute,
             child: Icon(
               muted ? Icons.mic_off : Icons.mic,
-              color: muted ? Colors.white : Colors.indigo[400],
+              color: muted ? Colors.white : Theme.of(context).primaryColor,
               size: 20.0,
             ),
             shape: const CircleBorder(),
             elevation: 2.0,
-            fillColor: muted ? Colors.indigo[400] : Colors.white,
+            fillColor: muted ? Theme.of(context).primaryColor : Colors.white,
             padding: const EdgeInsets.all(10.0),
           ),
           RawMaterialButton(
@@ -144,7 +156,7 @@ class _CallScreenState extends State<CallScreen> {
             ),
             shape: const CircleBorder(),
             elevation: 2.0,
-            fillColor: Colors.redAccent,
+            fillColor: Color(0xffd54c4c),
             padding: const EdgeInsets.all(10.0),
           ),
           RawMaterialButton(
@@ -156,20 +168,22 @@ class _CallScreenState extends State<CallScreen> {
             ),
             shape: const CircleBorder(),
             elevation: 2.0,
-            fillColor: Colors.indigo[400],
+            fillColor: Theme.of(context).primaryColor,
             padding: const EdgeInsets.all(10.0),
           ),
           RawMaterialButton(
             constraints: const BoxConstraints(maxHeight: 40, maxWidth: 40),
             onPressed: () {
-              print(widget.channelId);
+              print(widget.meetCode);
               Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => ChatScreen(
+                      fromRoom: false,
+                      roomName: 'Room',
                       isInstant: widget.isInstant,
-                      chatCode: widget.channelId,
-                      user: widget.user,
+                      chatCode: widget.meetCode,
+                      username: widget.username,
                     ),
                   ));
             },
@@ -180,7 +194,7 @@ class _CallScreenState extends State<CallScreen> {
             ),
             shape: const CircleBorder(),
             elevation: 2.0,
-            fillColor: Colors.indigo[400],
+            fillColor: Theme.of(context).primaryColor,
             padding: const EdgeInsets.all(10.0),
           )
         ],
@@ -192,8 +206,11 @@ class _CallScreenState extends State<CallScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.indigo[400],
-        title: const Text('Teams_clone'),
+        backgroundColor: Theme.of(context).primaryColor,
+        title: Text(
+          widget.isInstant ? 'Instant Meeting' : widget.roomName,
+          style: TextStyle(fontFamily: 'Mons'),
+        ),
       ),
       backgroundColor: Colors.black,
       body: Center(
@@ -218,7 +235,12 @@ class _CallScreenState extends State<CallScreen> {
 
   /// Video view wrapper
   Widget _videoView(view) {
-    return Expanded(child: Container(child: view));
+    return Expanded(
+      child: Container(
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(40)),
+        child: view,
+      ),
+    );
   }
 
   /// Video view row wrapper
@@ -262,30 +284,62 @@ class _CallScreenState extends State<CallScreen> {
             _expandedVideoRow(views.sublist(2, 4))
           ],
         );
+      case 5:
+        return Column(
+          children: <Widget>[
+            _expandedVideoRow(views.sublist(0, 2)),
+            _expandedVideoRow(views.sublist(2, 4)),
+            _expandedVideoRow(views.sublist(4, 5)),
+          ],
+        );
+      case 6:
+        return Column(
+          children: <Widget>[
+            _expandedVideoRow(views.sublist(0, 2)),
+            _expandedVideoRow(views.sublist(2, 4)),
+            _expandedVideoRow(views.sublist(4, 6)),
+          ],
+        );
       default:
+        return Container(
+          color: Theme.of(context).primaryColor,
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(15.0),
+              child: Text(
+                userLimit,
+                style: TextStyle(
+                    color: Color(0xfff0e3e3),
+                    fontFamily: 'Mons',
+                    fontWeight: FontWeight.w500),
+              ),
+            ),
+          ),
+        );
     }
-    return Container();
   }
 
   void _onCallEnd(BuildContext context) {
     Navigator.pop(context);
-    // if (_users.isEmpty) {
-    //   FirebaseFirestore.instance
-    //       .collection('meetingRoom')
-    //       .doc(widget.channelId)
-    //       .collection(widget.channelId)
-    //       .get()
-    //       .then((snapshot) {
-    //     for (DocumentSnapshot doc in snapshot.docs) {
-    //       doc.reference.delete();
-    //     }
-    //   });
+    if (_users.isEmpty) {
+      FirebaseFirestore.instance
+          .collection('instantMeeting')
+          .doc(widget.meetCode)
+          .collection(widget.meetCode)
+          .get()
+          .then(
+        (snapshot) {
+          for (DocumentSnapshot doc in snapshot.docs) {
+            doc.reference.delete();
+          }
+        },
+      );
 
-    //   FirebaseFirestore.instance
-    //       .collection('meetingRoom')
-    //       .doc(widget.channelId)
-    //       .delete();
-    // }
+      FirebaseFirestore.instance
+          .collection('instantMeeting')
+          .doc(widget.meetCode)
+          .delete();
+    }
   }
 
   void _onToggleMute() {
@@ -300,6 +354,7 @@ class _CallScreenState extends State<CallScreen> {
       showVideo = !showVideo;
     });
     _engine.enableLocalVideo(showVideo);
+    // _engine.muteLocalVideoStream(showVideo);
   }
 
   void _onSwitchCamera() {

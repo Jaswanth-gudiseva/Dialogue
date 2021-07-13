@@ -1,6 +1,8 @@
-import 'package:teams_app/constants.dart';
-import 'package:teams_app/widgets/auth_screen/rounded_button.dart';
 import 'package:flutter/material.dart';
+
+import 'package:teams_app/utils/constants.dart';
+import 'package:teams_app/widgets/auth_screen/rounded_button.dart';
+import 'package:teams_app/widgets/loading_widget.dart';
 
 class AuthForm extends StatefulWidget {
   AuthForm(
@@ -12,7 +14,7 @@ class AuthForm extends StatefulWidget {
   final void Function(
     String email,
     String password,
-    String userName,
+    String username,
     bool isLogin,
     BuildContext ctx,
   ) submitFn;
@@ -25,7 +27,7 @@ class _AuthFormState extends State<AuthForm> {
   final _formKey = GlobalKey<FormState>();
   var _isLogin = true;
   var _userEmail = '';
-  var _userName = '';
+  var _username = '';
   var _userPassword = '';
 
   void _trySubmit() {
@@ -34,7 +36,7 @@ class _AuthFormState extends State<AuthForm> {
 
     if (isValid) {
       _formKey.currentState!.save();
-      widget.submitFn(_userEmail.trim(), _userPassword.trim(), _userName.trim(),
+      widget.submitFn(_userEmail.trim(), _userPassword.trim(), _username.trim(),
           _isLogin, context);
     }
   }
@@ -49,18 +51,21 @@ class _AuthFormState extends State<AuthForm> {
           mainAxisAlignment: MainAxisAlignment.center,
           // crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            // ignore: sized_box_for_whitespace
-            Hero(
-              tag: 'logo',
-              child: SizedBox(
-                height: 200.0,
-                child: Image.asset('images/logo.png'),
+            SizedBox(
+              height: 200.0,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Image.asset('images/dialogo.png'),
               ),
             ),
             const SizedBox(
               height: 48.0,
             ),
             TextFormField(
+              style: TextStyle(
+                color: Color(0xfff0e3e3),
+                fontFamily: 'Mons',
+              ),
               validator: (value) {
                 if (value!.isEmpty || !value.contains('@')) {
                   return 'please enter a valid Email address';
@@ -69,11 +74,10 @@ class _AuthFormState extends State<AuthForm> {
                 }
               },
               keyboardType: TextInputType.emailAddress,
-              style: const TextStyle(color: Colors.black87),
               onSaved: (value) {
                 _userEmail = value!;
               },
-              decoration: kLoginTextFieldDecoration.copyWith(
+              decoration: kInputTextFieldDecoration.copyWith(
                   hintText: 'Enter your Email'),
             ),
             const SizedBox(
@@ -81,6 +85,10 @@ class _AuthFormState extends State<AuthForm> {
             ),
             if (!_isLogin)
               TextFormField(
+                style: TextStyle(
+                  color: Color(0xfff0e3e3),
+                  fontFamily: 'Mons',
+                ),
                 key: ValueKey('username'),
                 validator: (value) {
                   if (value!.isEmpty || value.length < 4) {
@@ -89,9 +97,9 @@ class _AuthFormState extends State<AuthForm> {
                   return null;
                 },
                 decoration:
-                    kLoginTextFieldDecoration.copyWith(hintText: 'Username'),
+                    kInputTextFieldDecoration.copyWith(hintText: 'Username'),
                 onSaved: (value) {
-                  _userName = value!;
+                  _username = value!;
                 },
               ),
             if (!_isLogin)
@@ -99,6 +107,10 @@ class _AuthFormState extends State<AuthForm> {
                 height: 8.0,
               ),
             TextFormField(
+              style: TextStyle(
+                color: Color(0xfff0e3e3),
+                fontFamily: 'Mons',
+              ),
               validator: (value) {
                 if (value!.isEmpty || value.length < 7) {
                   return 'Password must be at least 7 characters long';
@@ -107,35 +119,41 @@ class _AuthFormState extends State<AuthForm> {
                 }
               },
               obscureText: true,
-              style: const TextStyle(color: Colors.black87),
               onSaved: (value) {
                 _userPassword = value!;
               },
-              decoration: kLoginTextFieldDecoration.copyWith(
-                  hintText: 'Enter your Password'),
+              decoration: kInputTextFieldDecoration.copyWith(
+                  hintText:
+                      _isLogin ? 'Enter your Password' : 'Enter Password'),
             ),
             const SizedBox(
               height: 24.0,
             ),
-            if (widget.isLoading) CircularProgressIndicator(),
+            if (widget.isLoading)
+              AnimatedLoader(
+                text: 'logging you in',
+              ),
             if (!widget.isLoading)
               RoundedButton(
                 buttonText: _isLogin ? 'Login' : 'Signup',
-                colour: Colors.lightBlueAccent,
+                colour: Theme.of(context).accentColor,
                 onPressed: _trySubmit,
               ),
             if (!widget.isLoading)
               TextButton(
                 style: ElevatedButton.styleFrom(
-                    primary: Colors.white.withOpacity(0)),
+                  primary: Colors.transparent,
+                ),
                 onPressed: () {
                   setState(() {
                     _isLogin = !_isLogin;
                   });
                 },
-                child: Text(_isLogin
-                    ? 'Create new account'
-                    : 'I already have an account'),
+                child: Text(
+                  _isLogin ? 'Create new account' : 'I already have an account',
+                  style:
+                      TextStyle(color: Color(0xfff0e3e3), fontFamily: 'Mons'),
+                ),
               ),
           ],
         ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:teams_app/screens/home_screen.dart';
 import 'package:teams_app/utils/ui_scaling.dart';
 
@@ -24,13 +25,14 @@ class DrawerListTile extends StatelessWidget {
       leading: Icon(
         icon,
         size: SizeConfig.safeBlockVertical! * 2,
-        color: Colors.white70,
+        color: Color(0xfff0e3e3),
       ),
       title: Text(
         title,
         style: TextStyle(
-          fontSize: SizeConfig.safeBlockVertical! * 1.7,
-          color: Colors.white70,
+          fontFamily: 'Mons',
+          fontSize: SizeConfig.safeBlockVertical! * 2.2,
+          color: Color(0xfff0e3e3),
         ),
       ),
       onTap: onTap,

@@ -1,34 +1,33 @@
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:teams_app/screens/create_meeting.dart';
-import 'package:teams_app/screens/input_page.dart';
+
+import 'package:teams_app/screens/create_screen.dart';
+import 'package:teams_app/screens/instant_meeting_screen.dart';
+import 'package:teams_app/screens/join_screen.dart';
 import 'package:teams_app/utils/ui_scaling.dart';
 import 'package:teams_app/widgets/home_screen/drawer_tile.dart';
 import 'package:teams_app/widgets/home_screen/room_stream.dart';
-import 'join_meeting.dart';
 
 class HomeScreen extends StatefulWidget {
-  String _userName = '';
+  /// Stores the username of the user logged in
+  String username = '';
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  /// Stores the page index of current screen selected from bottom navigation
+  /// bar
   int selectedPage = 0;
-
-  // final _pageOptions = [
-  //   HomeScreen(),
-  //   InputPage(user: widget._userName,),
-
-  // ];
   @override
   void initState() {
     super.initState();
     _getUserName();
   }
 
+  /// Fetches the username of the current user from Firestore
   Future<void> _getUserName() async {
     FirebaseFirestore.instance
         .collection('users')
@@ -38,7 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
       (value) {
         if (mounted) {
           setState(() {
-            widget._userName = value.get('username').toString();
+            widget.username = value.get('username').toString();
           });
         }
       },
@@ -48,16 +47,17 @@ class _HomeScreenState extends State<HomeScreen> {
   final _auth = FirebaseAuth.instance;
   @override
   Widget build(BuildContext context) {
+    SizeConfig().init(context);
     final _pageOptions = [
       RoomStream(
-        username: widget._userName,
+        username: widget.username,
       ),
       InputPage(
-        user: widget._userName,
+        username: widget.username,
       ),
     ];
-    SizeConfig().init(context);
     return Scaffold(
+      backgroundColor: Theme.of(context).primaryColor,
       bottomNavigationBar: BottomNavigationBar(
         onTap: (index) {
           setState(() {
@@ -71,43 +71,53 @@ class _HomeScreenState extends State<HomeScreen> {
         type: BottomNavigationBarType.fixed,
         items: [
           BottomNavigationBarItem(
-            label: "Rooms",
-            icon: Icon(
-              Icons.chat_rounded,
+            title: Text(
+              'Rooms',
+              style: TextStyle(fontFamily: 'Mons', fontSize: 12),
             ),
+            icon: Icon(Icons.group_rounded),
           ),
           BottomNavigationBarItem(
-            label: "Video Call",
+            title: Text(
+              'Instant Meet',
+              style: TextStyle(fontFamily: 'Mons', fontSize: 12),
+            ),
             icon: Icon(Icons.video_call_rounded),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        icon: Icon(FontAwesomeIcons.userPlus),
-        label: Text("Join Room"),
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => JoinMeeting(
-                isInstant: false,
-                user: widget._userName,
+      floatingActionButton: selectedPage == 0
+          ? FloatingActionButton.extended(
+              icon: Icon(FontAwesomeIcons.solidArrowAltCircleRight),
+              label: Text(
+                "Join Room",
+                style: TextStyle(fontFamily: 'Mons'),
               ),
-            ),
-          );
-        },
-      ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => JoinMeeting(
+                      isInstant: false,
+                      username: widget.username,
+                    ),
+                  ),
+                );
+              },
+            )
+          : null,
       drawer: Drawer(
         child: Container(
-          color: Color(0xff433751),
-          child: ListView(
+          color: Theme.of(context).primaryColor,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.only(
                       bottomLeft: Radius.circular(7),
                       bottomRight: Radius.circular(7)),
-                  color: Colors.indigo[500],
+                  color: Theme.of(context).accentColor,
                 ),
                 height: SizeConfig.safeBlockVertical! * 15,
                 child: DrawerHeader(
@@ -116,99 +126,115 @@ class _HomeScreenState extends State<HomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Text(
-                        widget._userName,
+                        widget.username,
                         style: TextStyle(
+                          fontFamily: 'Mons',
                           fontSize: SizeConfig.safeBlockVertical! * 2.6,
-                          color: Colors.white.withOpacity(0.87),
+                          color: Color(0xff234153),
                         ),
                       ),
                       Text(
                         _auth.currentUser!.email.toString(),
                         style: TextStyle(
+                          fontFamily: 'Mons',
                           fontSize: SizeConfig.safeBlockVertical! * 1.8,
-                          color: Colors.white70,
+                          color: Color(0xff234153),
                         ),
                       ),
                     ],
                   ),
                 ),
               ),
-              DrawerListTile(
-                icon: FontAwesomeIcons.users,
-                title: 'Create Room',
-                widget: widget,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => CreateMeeting(
-                        isInstant: false,
-                        user: widget._userName,
+              Expanded(
+                child: DrawerListTile(
+                  icon: FontAwesomeIcons.signOutAlt,
+                  title: 'Logout',
+                  widget: widget,
+                  onTap: () {
+                    FirebaseAuth.instance.signOut();
+                  },
+                ),
+              ),
+              Divider(
+                thickness: 1,
+                color: Color(0xff70657d),
+              ),
+              Container(
+                padding: EdgeInsets.only(bottom: 10, left: 15),
+                height: 40,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "V1.0.0",
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontFamily: 'Mons',
+                        color: Color(0xfff0e3e3),
                       ),
                     ),
-                  );
-                },
-              ),
-              DrawerListTile(
-                icon: FontAwesomeIcons.userPlus,
-                title: 'Join Room',
-                widget: widget,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => JoinMeeting(
-                        isInstant: false,
-                        user: widget._userName,
+                    Text(
+                      "Made with 💜 under Microsoft Engage'21",
+                      style: TextStyle(
+                        fontFamily: 'Mons',
+                        color: Color(0xff70657d),
+                        fontSize: 10,
                       ),
                     ),
-                  );
-                },
-              ),
-              DrawerListTile(
-                icon: FontAwesomeIcons.video,
-                widget: widget,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => InputPage(
-                        user: widget._userName,
-                      ),
-                    ),
-                  );
-                },
-                title: 'Instant Meeting',
-              ),
-              DrawerListTile(
-                icon: FontAwesomeIcons.signOutAlt,
-                title: 'Logout',
-                widget: widget,
-                onTap: () {
-                  FirebaseAuth.instance.signOut();
-                },
+                  ],
+                ),
               )
             ],
           ),
         ),
       ),
       appBar: AppBar(
-        actions: [],
-        leading: Image.asset('images/dialogoapp.png'),
         title: Text(
           'DIALOGUE',
           style: TextStyle(
+            fontFamily: 'Mons',
+            fontWeight: FontWeight.w400,
+            fontSize: 0.03 * SizeConfig.bodyScreenHeight!,
             color: Color(0xffdee1e6),
           ),
         ),
-        backgroundColor: Color(0xff433751),
         elevation: 0,
+        actions: [
+          Visibility(
+            visible: selectedPage == 0,
+            child: FloatingActionButton.extended(
+              heroTag: 'FBA',
+              highlightElevation: 0,
+              elevation: 0,
+              splashColor: Colors.transparent,
+              backgroundColor: Colors.transparent,
+              icon: Icon(
+                FontAwesomeIcons.plusCircle,
+                color: Color(0xfff0e3e3),
+              ),
+              label: Text(
+                "Create Room",
+                style: TextStyle(
+                    fontFamily: 'Mons', color: Color(0xfff0e3e3), fontSize: 12),
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CreateMeeting(
+                      isInstant: false,
+                      username: widget.username,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+        backgroundColor: Theme.of(context).primaryColor,
       ),
       body: Container(
-        color: Color(0xff433751),
-        // child: RoomStream(
-        //   username: widget._userName,
-        // ),
+        color: Theme.of(context).primaryColor,
         child: _pageOptions[selectedPage],
       ),
     );

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
+import 'package:teams_app/screens/auth_screen.dart';
+import 'package:teams_app/screens/home_screen.dart';
+import 'package:teams_app/screens/splash_screen.dart';
 import 'package:teams_app/utils/themes.dart';
-import 'screens/home_screen.dart';
-import 'screens/auth_screen.dart';
-import 'screens/splash_screen.dart';
-import 'package:flutter/services.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,7 +26,7 @@ class TeamsClone extends StatelessWidget {
       future: _initialization,
       builder: (context, appSnapshot) {
         return MaterialApp(
-          theme: customTheme,
+          theme: appTheme,
           debugShowCheckedModeBanner: false,
           home: appSnapshot.connectionState != ConnectionState.done
               ? SplashScreen()

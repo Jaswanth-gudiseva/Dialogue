@@ -9,11 +9,14 @@ class SizeConfig {
   late double _safeAreaVertical;
   static double? safeBlockHorizontal;
   static double? safeBlockVertical;
+  static num? bodyScreenHeight;
 
   void init(BuildContext context) {
     _mediaQueryData = MediaQuery.of(context);
     screenWidth = _mediaQueryData.size.width;
     screenHeight = _mediaQueryData.size.height;
+    bodyScreenHeight =
+        screenHeight! - _mediaQueryData.padding.top - kToolbarHeight;
 
     _safeAreaHorizontal =
         _mediaQueryData.padding.left + _mediaQueryData.padding.right;

@@ -1,8 +1,8 @@
 import 'dart:async';
-
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
+
 import 'package:teams_app/widgets/home_screen/room_widget.dart';
 
 class FireStoreDB {
@@ -36,7 +36,7 @@ class FireStoreDB {
     }
   }
 
-  Future later(List codes, String username) async {
+  Future getRoomNames(List codes, String username) async {
     List<Widget> roomWidgets = [];
     for (var code in codes) {
       var documents = await FirebaseFirestore.instance
@@ -44,11 +44,19 @@ class FireStoreDB {
           .doc(code.id)
           .get();
       final roomWidget = RoomWidget(
-          code: code.id,
+          chatCode: code.id,
           username: username,
           roomName: documents.data()!['roomName']);
       roomWidgets.add(roomWidget);
     }
     return roomWidgets;
+  }
+
+  Future<String> getRoomName(String code) async {
+    var roomName = await FirebaseFirestore.instance
+        .collection('meetingRoom')
+        .doc(code)
+        .get();
+    return roomName.data()!['roomName'];
   }
 }

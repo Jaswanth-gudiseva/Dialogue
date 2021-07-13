@@ -1,8 +1,9 @@
-import 'package:teams_app/utils/ui_scaling.dart';
-import 'package:teams_app/widgets/auth_screen/auth_form.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
+import 'package:teams_app/utils/ui_scaling.dart';
+import 'package:teams_app/widgets/auth_screen/auth_form.dart';
 
 class AuthScreen extends StatefulWidget {
   @override
@@ -23,7 +24,6 @@ class _AuthScreenState extends State<AuthScreen> {
     BuildContext ctx,
   ) async {
     UserCredential authResult;
-
     try {
       setState(() {
         _isLoading = true;
@@ -55,7 +55,7 @@ class _AuthScreenState extends State<AuthScreen> {
       ScaffoldMessenger.of(ctx).showSnackBar(
         SnackBar(
           content: Text(message),
-          backgroundColor: Colors.red,
+          backgroundColor: Color(0xffd54c4c),
         ),
       );
       setState(
@@ -65,9 +65,11 @@ class _AuthScreenState extends State<AuthScreen> {
       );
     } catch (err) {
       print(err);
-      setState(() {
-        _isLoading = false;
-      });
+      setState(
+        () {
+          _isLoading = false;
+        },
+      );
     }
   }
 
@@ -75,7 +77,7 @@ class _AuthScreenState extends State<AuthScreen> {
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Color(0xff4d3f5d),
       body: AuthForm(
         _submitAuthForm,
         _isLoading,

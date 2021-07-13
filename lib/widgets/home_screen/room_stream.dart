@@ -1,7 +1,9 @@
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
+
 import 'package:teams_app/services/firestore_db.dart';
+import 'package:teams_app/widgets/loading_widget.dart';
 
 class RoomStream extends StatelessWidget {
   final _auth = FirebaseAuth.instance;
@@ -17,10 +19,10 @@ class RoomStream extends StatelessWidget {
           .snapshots(),
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (!snapshot.hasData) {
-          return const Center(
-            child: CircularProgressIndicator(
-                // backgroundColor: Colors.indigo,
-                ),
+          return Center(
+            child: AnimatedLoader(
+              text: 'fetching your chats',
+            ),
           );
         }
         final codes = snapshot.data!.docs;
@@ -36,7 +38,7 @@ class RoomStream extends StatelessWidget {
               );
             } else {
               return Center(
-                child: CircularProgressIndicator(),
+                child: AnimatedLoader(text: 'fetching your chats'),
               );
             }
           },
